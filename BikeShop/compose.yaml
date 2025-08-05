@@ -1,0 +1,6 @@
+﻿services:
+  centralshop:
+    image: centralshop
+    build:
+      context: .
+      dockerfile: CentralShop/Dockerfile
