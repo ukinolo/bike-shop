@@ -4,3 +4,9 @@
     build:
       context: .
       dockerfile: CentralShop/Dockerfile
+  officeshop:
+    image: officeshop
+    build:
+      context: .
+      dockerfile: OfficeShop/Dockerfile
+
