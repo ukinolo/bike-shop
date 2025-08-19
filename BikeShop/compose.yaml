@@ -4,6 +4,12 @@
     build:
       context: .
       dockerfile: CentralShop/Dockerfile
+    depends_on:
+      - centralshop_db
+  
+  centralshop_db:
+    image: postgress
+    
   officeshop:
     image: officeshop
     build:

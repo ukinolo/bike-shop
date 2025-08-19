@@ -1,32 +1,77 @@
+using Domain;
+using Domain.Model;
+using Infrastructure;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<CustomerDbContext>(options => 
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.MapGet("/customer", (CustomerDbContext db) => db.Customers);
 
-var summaries = new[]
+app.MapPost("/customer", async (CustomerCreateDto customerCreate, CustomerDbContext db) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    if (await db.Customers.AnyAsync(c => c.Id == customerCreate.ID))
+        return Results.BadRequest();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-            new WeatherForecast
-            (
-                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                Random.Shared.Next(-20, 55),
-                summaries[Random.Shared.Next(summaries.Length)]
-            ))
-        .ToArray();
-    return forecast;
+    await db.Customers.AddAsync(new Customer(
+        customerCreate.ID,
+        customerCreate.Name,
+        customerCreate.Surname,
+        customerCreate.Address,
+        0));
+    await db.SaveChangesAsync();
+    
+    return Results.Created();
 });
+
+app.MapPut("/customer/{id}/rent", async (string id, CustomerDbContext db) =>
+{
+    var customer = await db.Customers.Where(c => c.Id == id).FirstOrDefaultAsync();
+    
+    if (customer == null)
+    {
+        return Results.NotFound();
+    }
+    if (customer.RentedBikes == 2)
+    {
+        return Results.BadRequest();
+    }
+    
+    customer.RentedBikes++;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+app.MapPut("/customer/{id}/release", async (string id, CustomerDbContext db) =>
+{
+    var customer = await db.Customers.Where(c => c.Id == id).FirstOrDefaultAsync();
+    if (customer == null)
+    {
+        return Results.BadRequest();
+    }
+    customer.RentedBikes = customer.RentedBikes == 0 ? 0 : customer.RentedBikes - 1;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+app.MapGet("/customer/{id}/", async (string id, CustomerDbContext db) =>
+{
+    var customer = await db.Customers.Where(c => c.Id == id).FirstOrDefaultAsync();
+    if (customer == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(customer);
+});
+
+app.MapGet("/ping", () => Results.Ok());
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+internal record CustomerCreateDto(string ID, string Name, string Surname, string Address);
