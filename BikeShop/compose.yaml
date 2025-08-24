@@ -1,17 +1,19 @@
 ﻿services:
-  centralshop:
-    image: centralshop
+  central-shop:
+    image: central-shop
     build:
       context: .
       dockerfile: CentralShop/Dockerfile
     ports:
       - "8080:8080"
-      - "8081:8081"
     depends_on:
-      centralshop.db:
+      central-shop-db:
         condition: service_healthy
+    networks:
+      central:
+      back:
   
-  centralshop.db:
+  central-shop-db:
     image: postgres
     environment:
       - POSTGRES_USER=postgres
@@ -24,16 +26,112 @@
       retries: 5
     volumes:
       - csdb:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    networks:
+      central:
     
-  officeshop:
-    image: officeshop
+  office-ns:
+    image: office-ns
     build:
       context: .
       dockerfile: OfficeShop/Dockerfile
-
+    command: ["NoviSad"]
+    ports:
+      - "8081:8080"
+    depends_on:
+      office-ns-db:
+        condition: service_healthy
+    networks:
+      ns:
+      back:
   
+  office-ns-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - nsdb:/var/lib/postgresql/data
+    networks:
+      ns:
+
+  office-kg:
+    image: office-kg
+    build:
+      context: .
+      dockerfile: OfficeShop/Dockerfile
+    command: [ "Kragujevac" ]
+    ports:
+      - "8082:8080"
+    depends_on:
+      office-kg-db:
+        condition: service_healthy
+    networks:
+      kg:
+      back:
+
+  office-kg-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - kgdb:/var/lib/postgresql/data
+    networks:
+      kg:
+
+  office-su:
+    image: office-su
+    build:
+      context: .
+      dockerfile: OfficeShop/Dockerfile
+    command: ["Subotica"]
+    ports:
+      - "8083:8080"
+    depends_on:
+      office-su-db:
+        condition: service_healthy
+    networks:
+      su:
+      back:
+
+  office-su-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - sudb:/var/lib/postgresql/data
+    networks:
+      su:
+
 volumes:
   csdb:
+  nsdb:
+  kgdb:
+  sudb:
+  
+networks:
+  central:
+  ns:
+  kg:
+  su:
+  back:
     
