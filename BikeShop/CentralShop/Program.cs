@@ -1,15 +1,24 @@
-using Domain;
 using Domain.Model;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 // Add services to the container.
-builder.Services.AddDbContext<CustomerDbContext>(options => 
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<CustomerDbContext>(options => options.UseNpgsql(connectionString, dbContextBuilder => dbContextBuilder.MigrationsAssembly("CentralShop")));
 
 var app = builder.Build();
+
+{
+    using IServiceScope scope = app.Services.CreateScope();
+
+    using CustomerDbContext dbContext =
+        scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
+    
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 app.MapGet("/customer", (CustomerDbContext db) => db.Customers);
