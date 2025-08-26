@@ -40,3 +40,36 @@
 .read-the-docs {
   color: #888;
 }
+
+
+
+
+#container {
+  background-color: white;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+
+#left-half {
+  position: absolute;
+  top: 0;
+  right: 50%;
+  left: 0;
+  bottom: 0;
+  padding-right: 2px;
+  padding-left: 2px;
+}
+
+#right-half {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 50%;
+  bottom: 0;
+  border-left: 3px dotted black;
+  padding-left: 2px;
+  padding-right: 2px;
+}

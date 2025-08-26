@@ -9,6 +9,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add services to the container.
 builder.Services.AddDbContext<CustomerDbContext>(options => options.UseNpgsql(connectionString, dbContextBuilder => dbContextBuilder.MigrationsAssembly("CentralShop")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowAll", policy =>
+    {
+        policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 {
@@ -19,6 +27,8 @@ var app = builder.Build();
     
     dbContext.Database.Migrate();
 }
+
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 app.MapGet("/customer", (CustomerDbContext db) => db.Customers);

@@ -22,6 +22,14 @@ var connectionString = builder.Configuration.GetConnectionString(city);
 // Add services to the container.
 builder.Services.AddDbContext<BikeDbContext>(options => options.UseNpgsql(connectionString, dbContextBuilder => dbContextBuilder.MigrationsAssembly("OfficeShop")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowAll", policy =>
+    {
+        policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 //TODO inject the http client to send requests to check for CentralShop
 
 var app = builder.Build();
@@ -34,6 +42,8 @@ var app = builder.Build();
     
     dbContext.Database.Migrate();
 }
+
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 app.MapGet("/bike", (BikeDbContext db) => db.Bikes);
