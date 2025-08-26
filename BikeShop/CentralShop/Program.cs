@@ -55,11 +55,11 @@ app.MapPut("/customer/{id}/rent", async (string id, CustomerDbContext db) =>
     
     if (customer == null)
     {
-        return Results.NotFound();
+        return Results.NotFound("Customer not found");
     }
     if (customer.RentedBikes == 2)
     {
-        return Results.BadRequest();
+        return Results.BadRequest("You cannot rent");
     }
     
     customer.RentedBikes++;
@@ -72,21 +72,11 @@ app.MapPut("/customer/{id}/release", async (string id, CustomerDbContext db) =>
     var customer = await db.Customers.Where(c => c.Id == id).FirstOrDefaultAsync();
     if (customer == null)
     {
-        return Results.BadRequest();
+        return Results.BadRequest("Customer not found");
     }
     customer.RentedBikes = customer.RentedBikes == 0 ? 0 : customer.RentedBikes - 1;
     await db.SaveChangesAsync();
     return Results.Ok();
-});
-
-app.MapGet("/customer/{id}/", async (string id, CustomerDbContext db) =>
-{
-    var customer = await db.Customers.Where(c => c.Id == id).FirstOrDefaultAsync();
-    if (customer == null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(customer);
 });
 
 app.MapGet("/ping", () => Results.Ok());

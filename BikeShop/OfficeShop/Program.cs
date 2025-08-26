@@ -1,6 +1,7 @@
 using Domain.Model;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using OfficeShop;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-//TODO inject the http client to send requests to check for CentralShop
+builder.Services.AddHttpClient<CentralShopHttpClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("CentralShopApi"));
+});
 
 var app = builder.Build();
 
@@ -48,13 +52,13 @@ app.UseCors("AllowAll");
 // Configure the HTTP request pipeline.
 app.MapGet("/bike", (BikeDbContext db) => db.Bikes);
 
-app.MapPost("/bike", async (BikeCreateDto bikeCreateDto, BikeDbContext db) =>
+app.MapPost("/bike", async (BikeCreateDto bikeCreateDto, BikeDbContext db, CentralShopHttpClient client) =>
 {
-    //TODO
-    //Add check for Customer existence
-    //If NotFound, return Bad Request
-    //If Bad Request, return Bad Request
-    //If Ok, just save new Bike
+    var (success, error) = await client.RetBike(bikeCreateDto.CustomerId);
+    if (!success)
+    {
+        return Results.BadRequest(error);
+    }
     
     var bike = new Bike(
         bikeCreateDto.Id,
@@ -63,14 +67,15 @@ app.MapPost("/bike", async (BikeCreateDto bikeCreateDto, BikeDbContext db) =>
         bikeCreateDto.CustomerId);
     await db.Bikes.AddAsync(bike);
     await db.SaveChangesAsync();
+    return Results.Ok();
 });
 
-app.MapPut("/bike/{id}/return", async (string id, BikeDbContext db) =>
+app.MapPut("/bike/{id}/return", async (string id, BikeDbContext db, CentralShopHttpClient client) =>
 {
     var bike = await db.Bikes.Where(bike => bike.Id == id).FirstOrDefaultAsync();
     if (bike == null)
     {
-        return Results.NotFound();
+        return Results.NotFound("Bike not found");
     }
 
     if (bike.Returned)
@@ -78,8 +83,11 @@ app.MapPut("/bike/{id}/return", async (string id, BikeDbContext db) =>
         return Results.NoContent();
     }
 
-    //TODO
-    //Send request to return bike
+    var (success, error) = await client.ReleaseBike(bike.CustomerId);
+    if (!success)
+    {
+        return Results.BadRequest(error);
+    }
     bike.Returned = true;
     await db.SaveChangesAsync();
     return Results.Ok();
