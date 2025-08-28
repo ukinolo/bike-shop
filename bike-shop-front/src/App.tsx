@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import './App.css'
 import CustomerManagement from './components/CustomerManagement'
 import BikeManagement from './components/BikeManagement'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <div id='container'>
