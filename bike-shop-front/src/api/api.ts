@@ -3,8 +3,8 @@ import Bike from "../model/Bike";
 import { cities, type Cities } from "./Cities";
 import Customer from "../model/Customer";
 
-const central_api = "http://localhost:8080";
-const office_api = {ns: "http://localhost:8081", kg: "http://localhost:8082", su:"http://localhost:8083"};
+const central_api = "/api/central";
+const office_api = {ns: "/api/ns", kg: "/api/kg", su:"/api/su"};
 
 
 function getBaseApi(city: Cities) {
