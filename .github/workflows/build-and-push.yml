@@ -21,14 +21,16 @@ jobs:
       - name: Build and push Central shop image
         uses: docker/build-push-action@v6
         with:
-          context: ./BikeShop/CentralShop
+          context: ./BikeShop
+          file: ./BikeShop/CentralShop/Dockerfile
           push: true
           tags: ukinolo/central-bike-shop:latest
 
       - name: Build and push Office shop image
         uses: docker/build-push-action@v6
         with:
-          context: ./BikeShop/OfficeShop
+          context: ./BikeShop
+          file: ./BikeShop/OfficeShop/Dockerfile
           push: true
           tags: ukinolo/office-bike-shop:latest
 
