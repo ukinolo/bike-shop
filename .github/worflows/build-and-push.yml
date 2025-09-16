@@ -1,0 +1,40 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ukinolo
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Central shop image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./BikeShop/CentralShop
+          push: true
+          tags: ukinolo/central-bike-shop:latest
+
+      - name: Build and push Office shop image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./BikeShop/OfficeShop
+          push: true
+          tags: ukinolo/office-bike-shop:latest
+
+      - name: Build and push Frontend bike shop image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bike-shop-front
+          push: true
+          tags: ukinolo/frontend-bike-shop:latest
