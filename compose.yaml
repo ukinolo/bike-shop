@@ -1,0 +1,129 @@
+services:
+  central-shop:
+    image: ukinolo/central-bike-shop
+    depends_on:
+      central-shop-db:
+        condition: service_healthy
+    networks:
+      central:
+      back:
+  
+  central-shop-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - csdb:/var/lib/postgresql/data
+    networks:
+      central:
+    
+  office-ns:
+    image: ukinolo/office-bike-shop
+    command: ["NoviSad"]
+    depends_on:
+      office-ns-db:
+        condition: service_healthy
+    networks:
+      ns:
+      back:
+  
+  office-ns-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - nsdb:/var/lib/postgresql/data
+    networks:
+      ns:
+
+  office-kg:
+    image: ukinolo/office-bike-shop
+    command: [ "Kragujevac" ]
+    depends_on:
+      office-kg-db:
+        condition: service_healthy
+    networks:
+      kg:
+      back:
+
+  office-kg-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - kgdb:/var/lib/postgresql/data
+    networks:
+      kg:
+
+  office-su:
+    image: ukinolo/office-bike-shop
+    command: ["Subotica"]
+    depends_on:
+      office-su-db:
+        condition: service_healthy
+    networks:
+      su:
+      back:
+
+  office-su-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - sudb:/var/lib/postgresql/data
+    networks:
+      su:
+  
+  frontend:
+    image: ukinolo/frontend-bike-shop
+    ports:
+      - "8080:80"
+    networks:
+      - back
+    depends_on:
+      - central-shop
+      - office-ns
+      - office-kg
+      - office-su
+
+volumes:
+  csdb:
+  nsdb:
+  kgdb:
+  sudb:
+  
+networks:
+  central:
+  ns:
+  kg:
+  su:
+  back:
+    
