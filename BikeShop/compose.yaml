@@ -28,10 +28,10 @@
       central:
     
   office-ns:
-    image: office-ns
     build:
       context: .
       dockerfile: OfficeShop/Dockerfile
+    image: office
     command: ["NoviSad"]
     depends_on:
       office-ns-db:
@@ -57,10 +57,7 @@
       ns:
 
   office-kg:
-    image: office-kg
-    build:
-      context: .
-      dockerfile: OfficeShop/Dockerfile
+    image: office
     command: [ "Kragujevac" ]
     depends_on:
       office-kg-db:
@@ -86,10 +83,7 @@
       kg:
 
   office-su:
-    image: office-su
-    build:
-      context: .
-      dockerfile: OfficeShop/Dockerfile
+    image: office
     command: ["Subotica"]
     depends_on:
       office-su-db:
