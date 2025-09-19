@@ -1,6 +1,8 @@
 services:
   central-shop:
     image: ukinolo/central-bike-shop
+    environment:
+      - DATABASE_HOST=central-shop-db
     depends_on:
       central-shop-db:
         condition: service_healthy
@@ -26,6 +28,8 @@ services:
     
   office-ns:
     image: ukinolo/office-bike-shop
+    environment:
+      - DATABASE_HOST=office-ns-db
     command: ["NoviSad"]
     depends_on:
       office-ns-db:
@@ -52,6 +56,8 @@ services:
 
   office-kg:
     image: ukinolo/office-bike-shop
+    environment:
+      - DATABASE_HOST=office-kg-db
     command: [ "Kragujevac" ]
     depends_on:
       office-kg-db:
@@ -78,6 +84,8 @@ services:
 
   office-su:
     image: ukinolo/office-bike-shop
+    environment:
+      - DATABASE_HOST=office-su-db
     command: ["Subotica"]
     depends_on:
       office-su-db:
