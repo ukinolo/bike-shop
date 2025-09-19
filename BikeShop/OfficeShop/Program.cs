@@ -19,6 +19,8 @@ else
 }
 
 var connectionString = builder.Configuration.GetConnectionString(city);
+var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? "localhost";
+connectionString = connectionString!.Replace("{DATABASE_HOST}", dbHost);
 
 // Add services to the container.
 builder.Services.AddDbContext<BikeDbContext>(options => options.UseNpgsql(connectionString, dbContextBuilder => dbContextBuilder.MigrationsAssembly("OfficeShop")));
@@ -54,6 +56,10 @@ app.MapGet("/bike", (BikeDbContext db) => db.Bikes);
 
 app.MapPost("/bike", async (BikeCreateDto bikeCreateDto, BikeDbContext db, CentralShopHttpClient client) =>
 {
+    if (await db.Bikes.SingleOrDefaultAsync(bike => bike.Id == bikeCreateDto.Id) != null)
+    {
+        return Results.BadRequest("Bike already exists");
+    }
     var (success, error) = await client.RetBike(bikeCreateDto.CustomerId);
     if (!success)
     {

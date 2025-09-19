@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? "localhost";
+connectionString = connectionString!.Replace("{DATABASE_HOST}", dbHost);
 
 // Add services to the container.
 builder.Services.AddDbContext<CustomerDbContext>(options => options.UseNpgsql(connectionString, dbContextBuilder => dbContextBuilder.MigrationsAssembly("CentralShop")));
