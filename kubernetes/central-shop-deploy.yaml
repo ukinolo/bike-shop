@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: central-shop-pv
+spec:
+  capacity:
+    storage: 10Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/central-shop-db
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: central-shop-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-shop-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-shop-app
+  template:
+    metadata:
+      labels:
+        app: central-shop-app
+    spec:
+      containers:
+        - name: central-shop
+          image: ukinolo/central-bike-shop:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "localhost"
+        - name: central-shop-db
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+            - name: POSTGRES_DB
+              value: "db"
+          volumeMounts:
+            - name: central-shop-db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: central-shop-db-storage
+          persistentVolumeClaim:
+            claimName: central-shop-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: central-shop
+spec:
+  selector:
+    app: central-shop-app
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: office-shop-pv-${SHORT_NAME}
+spec:
+  capacity:
+    storage: 10Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/office-shop-db-${SHORT_NAME}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: office-shop-pvc-${SHORT_NAME}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: office-shop-deployment-${SHORT_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: office-shop-app-${SHORT_NAME}
+  template:
+    metadata:
+      labels:
+        app: office-shop-app-${SHORT_NAME}
+    spec:
+      containers:
+        - name: office-shop-${SHORT_NAME}
+          image: ukinolo/office-bike-shop:latest
+          args: ["${BACKEND_NAME}"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "localhost"
+        - name: office-shop-db-${SHORT_NAME}
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+            - name: POSTGRES_DB
+              value: "db"
+          volumeMounts:
+            - name: office-shop-db-storage-${SHORT_NAME}
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: office-shop-db-storage-${SHORT_NAME}
+          persistentVolumeClaim:
+            claimName: office-shop-pvc-${SHORT_NAME}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: office-${SHORT_NAME}
+spec:
+  selector:
+    app: office-shop-app-${SHORT_NAME}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
