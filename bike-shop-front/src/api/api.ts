@@ -45,8 +45,8 @@ export function createNewBike(city: Cities, bike: Bike) {
     })
 }
 
-export function returnBike(city: Cities, bikeId: number) {
-    axios.put(getBaseApi(city) + '/bike/' + bikeId.toString() + '/return').then(response => {
+export function returnBike(city: Cities, bikeId: string) {
+    axios.put(getBaseApi(city) + '/bike/' + bikeId + '/return').then(response => {
         if (response.status == 200) {
             alert("Bike succesfuly returned");
         } else {

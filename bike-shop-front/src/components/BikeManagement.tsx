@@ -13,7 +13,7 @@ import Button from "@mui/material/Button";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { createNewBike, getBikes } from "../api/api";
+import { createNewBike, getBikes, returnBike } from "../api/api";
 
 export default function BikeManagement() {
     const [bikes, setBikes] = useState<Bike[]>([]);
@@ -28,6 +28,10 @@ export default function BikeManagement() {
         newBike.Rented = new Date();
         createNewBike(selectedCity, newBike);
         setNewBike(new Bike('', '', new Date(), '', false))
+    }
+
+    function callReturnBike(bikeId: string){
+        returnBike(selectedCity, bikeId);
     }
 
     useEffect(() => {
@@ -69,7 +73,7 @@ export default function BikeManagement() {
                         <TableCell align="right">{bike.Type}</TableCell>
                         <TableCell align="right">{bike.Rented.toUTCString()}</TableCell>
                         <TableCell align="right">{bike.CustomerId}</TableCell>
-                        <TableCell align="right">{bike.Returned ? 'true' : 'false'}</TableCell>
+                        <TableCell align="right">{bike.Returned ? 'true' : <Button variant="contained" color="primary" onClick={() => callReturnBike(bike.Id)}>Return</Button>}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
