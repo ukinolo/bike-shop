@@ -5,10 +5,13 @@ metadata:
 spec:
   capacity:
     storage: 10Mi
+  volumeMode: Filesystem
+  storageClassName: standard
   accessModes:
     - ReadWriteOnce
   hostPath:
     path: /data/central-shop-db
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
@@ -16,6 +19,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: central-shop-pvc
 spec:
+  volumeName: central-shop-pv
   accessModes:
     - ReadWriteOnce
   resources:
@@ -58,7 +62,7 @@ spec:
               value: "db"
           volumeMounts:
             - name: central-shop-db-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
       volumes:
         - name: central-shop-db-storage
           persistentVolumeClaim:
